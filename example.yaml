@@ -1,0 +1,110 @@
+version: 1.0
+meta:
+  id: 9f3a2b85-2c1e-4d2e-9a3d-7f1b0c2a1e55
+  created_at: 2025-07-22T10:15:30Z
+  tags: [demo, yaml, sample, nested]
+  description: |
+    Большой пример YAML-файла.
+    Показывает вложенные структуры, массивы, много строк и разные типы значений.
+
+project:
+  name: MegaService
+  owner: alice
+  repo: git@example.com:org/megaservice.git
+  license: MIT
+  contributors:
+    - name: Alice
+      role: maintainer
+      email: alice@example.com
+    - name: Bob
+      role: developer
+      email: bob@example.com
+    - name: Carol
+      role: qa
+      email: carol@example.com
+
+settings:
+  debug: true
+  retries: 3
+  timeout_ms: 5000
+  features:
+    auth: true
+    billing: false
+    analytics:
+      enabled: true
+      provider: "InHouse"
+      sampling_rate: 0.15
+  paths:
+    data_dir: /var/lib/megaservice/data
+    log_dir: /var/log/megaservice
+    temp_dir: /tmp/megaservice
+
+environments:
+  - name: dev
+    url: https://dev.api.example.com
+    replicas: 1
+    vars:
+      DB_HOST: localhost
+      DB_PORT: 5432
+      LOG_LEVEL: debug
+  - name: staging
+    url: https://staging.api.example.com
+    replicas: 2
+    vars:
+      DB_HOST: staging-db.internal
+      DB_PORT: 5432
+      LOG_LEVEL: info
+  - name: prod
+    url: https://api.example.com
+    replicas: 6
+    vars:
+      DB_HOST: prod-db.internal
+      DB_PORT: 5432
+      LOG_LEVEL: warn
+
+services:
+  api:
+    port: 8080
+    healthcheck: /health
+    dependencies: [db, cache]
+  worker:
+    concurrency: 4
+    queue: main
+    schedules:
+      - cron: "0 * * * *"     # каждый час
+        task: cleanup-temp
+      - cron: "*/5 * * * *"   # каждые 5 минут
+        task: send-metrics
+
+# Якоря и алиасы
+defaults: &defaults
+  retries: 5
+  timeout_ms: 2000
+  enabled: true
+
+clients:
+  web:
+    <<: *defaults
+    cache: true
+    endpoints:
+      - /home
+      - /search
+      - /profile
+  mobile:
+    <<: *defaults
+    retries: 2
+    endpoints:
+      - /m/home
+      - /m/notifications
+
+misc:
+  empty_string: ""
+  null_value: null
+  numeric_array: [1, 2, 3, 4, 5]
+  mixed_array: [true, "text", 42, 3.14, {k: v}]
+  nested_arrays:
+    - [a, b, c]
+    - [1, 2, [x, y, z]]
+  notes: >
+    Это однострочный блок с переносами,
+    которые будут заменены на пробелы при парсинге.
